@@ -139,7 +139,8 @@ export const DiskScheduling: React.FC = () => {
   const [queueInput, setQueueInput] = useState<string>("");
   const [initialHead, setInitialHead] = useState<number | "">(53);
   const [displayedInitialHead, setDisplayedInitialHead] = useState<number | "">(53);
-  const [maxTrack, setMaxTrack] = useState<number>(199);
+  const [maxTrackInput, setMaxTrackInput] = useState<string>("");
+  const [maxTrack, setMaxTrack] = useState<number>(200);
   const [sequence, setSequence] = useState<number[]>([]);
   const [movements, setMovements] = useState<SeekMovement[]>([]);
   const [totalMovement, setTotalMovement] = useState<number>(0);
@@ -163,9 +164,10 @@ export const DiskScheduling: React.FC = () => {
 
     const parsedQueue = parseQueue(queueInput);
     const safeHead = Math.max(DISK_MIN, initialHead === "" ? 53 : initialHead);
+    const requestedMaxTrack = maxTrackInput === "" ? 200 : Math.max(200, parseInt(maxTrackInput, 10) || 200);
 
     const maxInput = Math.max(safeHead, ...parsedQueue);
-    const computedMaxTrack = maxInput > 199 ? Math.ceil(maxInput / 50) * 50 : 199;
+    const computedMaxTrack = Math.max(requestedMaxTrack, maxInput > requestedMaxTrack ? Math.ceil(maxInput / 50) * 50 : requestedMaxTrack);
     setMaxTrack(computedMaxTrack);
 
     const computedSequence = computeSequence(algorithm, safeHead, parsedQueue, computedMaxTrack);
@@ -313,6 +315,7 @@ export const DiskScheduling: React.FC = () => {
                   onClick={function () {
                     setQueueInput("98, 183, 37, 122, 14, 124, 65, 67");
                     setInitialHead(53);
+                    setMaxTrackInput("");
                     setAlgorithm("FCFS");
                     setHasRun(false);
                   }}
@@ -326,6 +329,7 @@ export const DiskScheduling: React.FC = () => {
                     setQueueInput("");
                     setInitialHead(53);
                     setDisplayedInitialHead(53);
+                    setMaxTrackInput("");
                     setAlgorithm("CHOOSE ALGORITHM");
                     setSequence([]);
                     setMovements([]);
@@ -365,6 +369,20 @@ export const DiskScheduling: React.FC = () => {
                     );
                   })}
                 </select>
+              </div>
+
+              <div className="disk-input-group">
+                <label>Max Track/Disk Size</label>
+                <input
+                  type="number"
+                  min={200}
+                  value={maxTrackInput}
+                  onChange={function (e) {
+                    setMaxTrackInput(e.target.value);
+                    setHasRun(false);
+                  }}
+                  placeholder="Default: 200"
+                />
               </div>
 
               <div className="disk-input-group disk-head-group">

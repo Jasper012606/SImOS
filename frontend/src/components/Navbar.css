@@ -17,6 +17,15 @@
   gap: 16px;
 }
 
+.nav-logo-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  line-height: 1;
+}
+
 .nav-menu-btn {
   background: transparent;
   border: none;
@@ -26,6 +35,7 @@
   padding: 6px 10px;
   transition: background 0.18s;
 }
+
 
 .nav-menu-btn svg {
   display: block;

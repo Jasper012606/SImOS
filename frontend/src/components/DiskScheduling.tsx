@@ -135,7 +135,8 @@ function computeSequence(algorithm: DiskAlgorithm, head: number, queue: number[]
 export const DiskScheduling: React.FC = () => {
   const [algorithm, setAlgorithm] = useState<DiskAlgorithm>("CHOOSE ALGORITHM");
   const [queueInput, setQueueInput] = useState<string>("");
-  const [initialHead, setInitialHead] = useState<number>(53);
+  const [initialHead, setInitialHead] = useState<number>(0);
+  const [displayedInitialHead, setDisplayedInitialHead] = useState<number>(0);
   const [maxTrack, setMaxTrack] = useState<number>(199);
   const [sequence, setSequence] = useState<number[]>([]);
   const [movements, setMovements] = useState<SeekMovement[]>([]);
@@ -172,6 +173,7 @@ export const DiskScheduling: React.FC = () => {
     }, 0);
 
     setInitialHead(safeHead);
+    setDisplayedInitialHead(safeHead);
     setSequence(computedSequence);
     setMovements(computedMovements);
     setTotalMovement(computedTotal);
@@ -268,7 +270,7 @@ export const DiskScheduling: React.FC = () => {
       const x = paddingLeft + (track / maxTrack) * graphWidth;
       const y = paddingTop + index * stepGap;
 
-      ctx.fillStyle = index === 0 ? "#7c5cbf" : "#3B7A6A";
+      ctx.fillStyle = index === 0 ? "#7c5cbf" : STEP_COLORS[(index - 1) % STEP_COLORS.length];
       ctx.beginPath();
       ctx.arc(x, y, 4.5, 0, Math.PI * 2);
       ctx.fill();
@@ -341,6 +343,7 @@ export const DiskScheduling: React.FC = () => {
                   onClick={function () {
                     setQueueInput("");
                     setInitialHead(0);
+                    setDisplayedInitialHead(0);
                     setAlgorithm("CHOOSE ALGORITHM");
                     setSequence([]);
                     setMovements([]);
@@ -423,7 +426,7 @@ export const DiskScheduling: React.FC = () => {
               </div>
               <div className="disk-summary-card">
                 <div className="disk-summary-label">Initial Head</div>
-                <div className="disk-summary-value">{initialHead}</div>
+                <div className="disk-summary-value">{displayedInitialHead}</div>
               </div>
               <div className="disk-summary-card accent">
                 <div className="disk-summary-label">Total Movement</div>

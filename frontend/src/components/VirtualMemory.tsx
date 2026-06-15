@@ -395,24 +395,6 @@ function VirtualMemory() {
     setAutoPlay(false);
   };
 
-  const handleSample = () => {
-    const p = WORKLOAD_PRESETS["Simple Walkthrough"];
-    const mem = p.memorySize!;
-    const pg = p.pageSize!;
-    const algo = p.algorithm! as Algorithm;
-    const seq = p.accessSequence!;
-    setMemorySize(mem);
-    setPageSize(pg);
-    setAlgorithm(algo);
-    setAccessSequence(seq);
-    setPreset("Simple Walkthrough");
-    setError("");
-    setAutoPlay(false);
-    const pages = seq.split(",").map((s) => Number(s.trim())).filter((n) => !isNaN(n));
-    const sim = runSimulation(pages, parseInt(mem), parseInt(pg), algo);
-    setResult(sim);
-    setStepIndex(null);
-  };
 
   const handleStep = () => {
     if (!result) return;
@@ -477,7 +459,7 @@ function VirtualMemory() {
                 <h2 className={styles.vmPanelTitle}>Configure Simulation</h2>
               </div>
               <div className={styles.vmHeaderActions}>
-                <button type="button" className={styles.vmStepBtn} onClick={handleSample}>Sample</button>
+
                 <button type="button" className={styles.vmRunBtn} onClick={handleRun}>Run</button>
                 <button type="button" className={styles.vmStepBtn} onClick={handleStep} disabled={!result}>Step</button>
                 <button type="button" className={styles.vmResetBtn} onClick={handleReset}>Reset</button>

@@ -9,6 +9,7 @@ interface SeekMovement {
 }
 
 type DiskAlgorithm = "CHOOSE ALGORITHM" | "FCFS" | "SSTF" | "SCAN" | "C-SCAN" | "LOOK" | "C-LOOK";
+type DiskDirection = "towards-0" | "towards-roof";
 
 const ALGORITHMS: { label: string; value: DiskAlgorithm; abbr: string }[] = [
   { label: "Choose Algorithm", value: "CHOOSE ALGORITHM", abbr: "None" },
@@ -21,6 +22,11 @@ const ALGORITHMS: { label: string; value: DiskAlgorithm; abbr: string }[] = [
 ];
 
 const DISK_MIN = 0;
+
+const DIRECTION_OPTIONS: { label: string; value: DiskDirection }[] = [
+  { label: "Towards 0", value: "towards-0" },
+  { label: "Towards Roof", value: "towards-roof" },
+];
 
 const STEP_COLORS = [
   "#4a6cf7", // blue
@@ -90,44 +96,92 @@ function runSSTF(head: number, queue: number[]): number[] {
   return sequence;
 }
 
-function runSCAN(head: number, queue: number[], maxVal: number): number[] {
+function runSCAN(head: number, queue: number[], maxVal: number, direction: DiskDirection): number[] {
   const left = queue.filter(function (value) { return value < head; }).sort(function (a, b) { return b - a; });
   const right = queue.filter(function (value) { return value >= head; }).sort(function (a, b) { return a - b; });
 
-  const sequence = [head, ...right];
+  if (direction === "towards-roof") {
+    const sequence = [head, ...right];
 
-  if (sequence[sequence.length - 1] !== maxVal) {
-    sequence.push(maxVal);
+    if (sequence[sequence.length - 1] !== maxVal) {
+      sequence.push(maxVal);
+    }
+
+    return [...sequence, ...left];
   }
 
-  return [...sequence, ...left];
+  const sequence = [head, ...left];
+
+  if (sequence[sequence.length - 1] !== DISK_MIN) {
+    sequence.push(DISK_MIN);
+  }
+
+  return [...sequence, ...right];
 }
 
-function runCSCAN(head: number, queue: number[], maxVal: number): number[] {
+function runCSCAN(head: number, queue: number[], maxVal: number, direction: DiskDirection): number[] {
   const left = queue.filter(function (value) { return value < head; }).sort(function (a, b) { return a - b; });
   const right = queue.filter(function (value) { return value >= head; }).sort(function (a, b) { return a - b; });
 
-  const sequence = [head, ...right];
+  if (direction === "towards-roof") {
+    const sequence = [head, ...right];
 
-  if (sequence[sequence.length - 1] !== maxVal) {
-    sequence.push(maxVal);
+    if (sequence[sequence.length - 1] !== maxVal) {
+      sequence.push(maxVal);
+    }
+
+    sequence.push(DISK_MIN);
+
+    return [...sequence, ...left];
   }
 
-  sequence.push(DISK_MIN);
+  const sequence = [head, ...left];
 
-  return [...sequence, ...left];
+  if (sequence[sequence.length - 1] !== DISK_MIN) {
+    sequence.push(DISK_MIN);
+  }
+
+  sequence.push(maxVal);
+
+  return [...sequence, ...right];
 }
 
-function computeSequence(algorithm: DiskAlgorithm, head: number, queue: number[], maxVal: number): number[] {
+function runLOOK(head: number, queue: number[], direction: DiskDirection): number[] {
+  const left = queue.filter(function (value) { return value < head; }).sort(function (a, b) { return b - a; });
+  const right = queue.filter(function (value) { return value >= head; }).sort(function (a, b) { return a - b; });
+
+  if (direction === "towards-roof") {
+    return [head, ...right, ...left];
+  }
+
+  return [head, ...left, ...right];
+}
+
+function runCLOOK(head: number, queue: number[], direction: DiskDirection): number[] {
+  const left = queue.filter(function (value) { return value < head; }).sort(function (a, b) { return a - b; });
+  const right = queue.filter(function (value) { return value >= head; }).sort(function (a, b) { return a - b; });
+
+  if (direction === "towards-roof") {
+    return [head, ...right, ...left];
+  }
+
+  return [head, ...left, ...right];
+}
+
+function computeSequence(algorithm: DiskAlgorithm, head: number, queue: number[], maxVal: number, direction: DiskDirection): number[] {
   if (queue.length === 0) return [head];
 
   switch (algorithm) {
     case "SSTF":
       return runSSTF(head, queue);
     case "SCAN":
-      return runSCAN(head, queue, maxVal);
+      return runSCAN(head, queue, maxVal, direction);
     case "C-SCAN":
-      return runCSCAN(head, queue, maxVal);
+      return runCSCAN(head, queue, maxVal, direction);
+    case "LOOK":
+      return runLOOK(head, queue, direction);
+    case "C-LOOK":
+      return runCLOOK(head, queue, direction);
     case "FCFS":
     default:
       return runFCFS(head, queue);
@@ -136,6 +190,7 @@ function computeSequence(algorithm: DiskAlgorithm, head: number, queue: number[]
 
 export const DiskScheduling: React.FC = () => {
   const [algorithm, setAlgorithm] = useState<DiskAlgorithm>("CHOOSE ALGORITHM");
+  const [direction, setDirection] = useState<DiskDirection>("towards-roof");
   const [queueInput, setQueueInput] = useState<string>("");
   const [initialHead, setInitialHead] = useState<number | "">(53);
   const [displayedInitialHead, setDisplayedInitialHead] = useState<number | "">(53);
@@ -151,6 +206,8 @@ export const DiskScheduling: React.FC = () => {
   const selectedAlgorithm = useMemo(function () {
     return ALGORITHMS.find(function (item) { return item.value === algorithm; })!;
   }, [algorithm]);
+
+  const showsDirectionInput = ["SCAN", "C-SCAN", "LOOK", "C-LOOK"].includes(algorithm);
 
   function handleExecuteRun(e?: React.FormEvent, isMount = false) {
     if (e) e.preventDefault();
@@ -170,7 +227,7 @@ export const DiskScheduling: React.FC = () => {
     const computedMaxTrack = Math.max(requestedMaxTrack, maxInput > requestedMaxTrack ? Math.ceil(maxInput / 50) * 50 : requestedMaxTrack);
     setMaxTrack(computedMaxTrack);
 
-    const computedSequence = computeSequence(algorithm, safeHead, parsedQueue, computedMaxTrack);
+    const computedSequence = computeSequence(algorithm, safeHead, parsedQueue, computedMaxTrack, direction);
     const computedMovements = buildMovements(computedSequence);
     const computedTotal = computedMovements.reduce(function (sum, move) {
       return sum + move.distance;
@@ -357,7 +414,11 @@ export const DiskScheduling: React.FC = () => {
                 <select
                   value={algorithm}
                   onChange={function (e) {
-                    setAlgorithm(e.target.value as DiskAlgorithm);
+                    const nextAlgorithm = e.target.value as DiskAlgorithm;
+                    setAlgorithm(nextAlgorithm);
+                    if (["SCAN", "C-SCAN", "LOOK", "C-LOOK"].includes(nextAlgorithm)) {
+                      setDirection("towards-roof");
+                    }
                     setHasRun(false);
                   }}
                 >
@@ -384,6 +445,27 @@ export const DiskScheduling: React.FC = () => {
                   placeholder="Default: 200"
                 />
               </div>
+
+              {showsDirectionInput && (
+                <div className="disk-input-group">
+                  <label>Direction</label>
+                  <select
+                    value={direction}
+                    onChange={function (e) {
+                      setDirection(e.target.value as DiskDirection);
+                      setHasRun(false);
+                    }}
+                  >
+                    {DIRECTION_OPTIONS.map(function (item) {
+                      return (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
 
               <div className="disk-input-group disk-head-group">
                 <label>Initial Head</label>

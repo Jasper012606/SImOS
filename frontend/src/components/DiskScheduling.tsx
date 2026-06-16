@@ -123,11 +123,13 @@ function runSCAN(head: number, queue: number[], maxVal: number, direction: DiskD
 }
 
 function runCSCAN(head: number, queue: number[], maxVal: number, direction: DiskDirection): number[] {
-  const left = queue.filter(function (value) { return value < head; }).sort(function (a, b) { return a - b; });
-  const right = queue.filter(function (value) { return value >= head; }).sort(function (a, b) { return a - b; });
+  const leftAsc = queue.filter(function (value) { return value < head; }).sort(function (a, b) { return a - b; });
+  const rightAsc = queue.filter(function (value) { return value >= head; }).sort(function (a, b) { return a - b; });
+  const leftDesc = [...leftAsc].reverse();
+  const rightDesc = [...rightAsc].reverse();
 
   if (direction === "towards-roof") {
-    const sequence = [head, ...right];
+    const sequence = [head, ...rightAsc];
 
     if (sequence[sequence.length - 1] !== maxVal) {
       sequence.push(maxVal);
@@ -135,10 +137,10 @@ function runCSCAN(head: number, queue: number[], maxVal: number, direction: Disk
 
     sequence.push(DISK_MIN);
 
-    return [...sequence, ...left];
+    return [...sequence, ...leftAsc];
   }
 
-  const sequence = [head, ...left];
+  const sequence = [head, ...leftDesc];
 
   if (sequence[sequence.length - 1] !== DISK_MIN) {
     sequence.push(DISK_MIN);
@@ -146,7 +148,7 @@ function runCSCAN(head: number, queue: number[], maxVal: number, direction: Disk
 
   sequence.push(maxVal);
 
-  return [...sequence, ...right];
+  return [...sequence, ...rightDesc];
 }
 
 function runLOOK(head: number, queue: number[], direction: DiskDirection): number[] {

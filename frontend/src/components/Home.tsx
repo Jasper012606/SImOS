@@ -144,6 +144,7 @@ function Home() {
   function scrollToSims() {
     const target = simRef.current;
     if (!target) return;
+
     const start = window.scrollY;
     const end = target.getBoundingClientRect().top + start - 24; // matches scroll-margin-top
     const distance = end - start;

@@ -97,7 +97,7 @@ const SIMULATIONS = [
     IconComponent: DiskIcon,
     iconBg: "#fff4e5",
     iconColor: "#e8a33c",
-    title: "Mass Storage",
+    title: "Mass Storage Management",
     description:
       "Simulate disk scheduling algorithms including FCFS, SSTF, SCAN, C-SCAN, and LOOK. Understand seek time optimization in action.",
     tags: ["FCFS", "SSTF", "SCAN", "C-SCAN", "LOOK", "C-LOOK"],

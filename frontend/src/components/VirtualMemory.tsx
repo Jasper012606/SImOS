@@ -544,7 +544,7 @@ function VirtualMemory() {
 
             <div className={styles.vmLogSection}>
               <button type="button" className={styles.vmLogToggle} onClick={() => setShowLog((v) => !v)}>
-                {showLog ? "▲ Hide" : "▼ Show"} Access Log ({result.accessLog.length} accesses)
+                {showLog ? "▲ Hide" : "▼ Show"} Page Replacement
               </button>
               {showLog && (
                 <div className={styles.vmTableWrap}>
